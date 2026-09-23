@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kuis Pengetahuan Umum & Pemrograman</title>
+  <style>
+    :root {
+      --primary-color: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-color: #1f2937;
+      --text-muted: #6b7280;
+      --correct-color: #10b981;
+      --wrong-color: #ef4444;
+      --border-color: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .quiz-card {
+      background-color: var(--card-bg);
+      width: 100%;
+      max-width: 650px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      transition: all 0.3s ease;
+    }
+
+    .start-screen, .results-screen {
+      text-align: center;
+    }
+
+    .start-screen h1, .results-screen h1 {
+      font-size: 2rem;
+      margin-bottom: 12px;
+      color: var(--primary-color);
+    }
+
+    .start-screen p, .results-screen p {
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-size: 1.05rem;
+    }
+
+    .btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background-color: #e5e7eb;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background-color: #d1d5db;
+    }
+
+    /* Quiz Header */
+    .quiz-header {
+      margin-bottom: 20px;
+    }
+
+    .meta-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .category-badge {
+      background-color: #e0e7ff;
+      color: var(--primary-color);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .progress-text {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background-color: #e5e7eb;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background-color: var(--primary-color);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Question & Options */
+    .question-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .options-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .option-item {
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+    }
+
+    .option-item:hover {
+      border-color: var(--primary-color);
+      background-color: #f9fafb;
+    }
+
+    .option-item.selected {
+      border-color: var(--primary-color);
+      background-color: #eeef2a10;
+      background-color: #eef2ff;
+      font-weight: 600;
+    }
+
+    .option-prefix {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background-color: #e5e7eb;
+      color: #4b5563;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 0.85rem;
+      font-weight: bold;
+      margin-right: 14px;
+      flex-shrink: 0;
+    }
+
+    .option-item.selected .option-prefix {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    /* Score Summary */
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background-color: #eef2ff;
+      color: var(--primary-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin: 0 auto 20px;
+      border: 4px solid var(--primary-color);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      padding: 12px;
+      border-radius: 8px;
+      background-color: #f9fafb;
+      border: 1px solid var(--border-color);
+    }
+
+    .stat-card.correct {
+      color: var(--correct-color);
+      background-color: #ecfdf5;
+      border-color: #a7f3d0;
+    }
+
+    .stat-card.wrong {
+      color: var(--wrong-color);
+      background-color: #fef2f2;
+      border-color: #fecaca;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    code {
+      background-color: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      color: #d97706;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="quiz-card">
+    <!-- Screen 1: Start Screen -->
+    <div id="start-screen" class="start-screen">
+      <h1>Quiz Game Interaktif</h1>
+      <p>Uji pengetahuanmu dengan 15 pertanyaan dari berbagai bidang mata pelajaran dan pengetahuan umum!</p>
+      <button class="btn" onclick="startQuiz()">Mulai Kuis</button>
+    </div>
+
+    <!-- Screen 2: Quiz Area -->
+    <div id="quiz-screen" class="hidden">
+      <div class="quiz-header">
+        <div class="meta-info">
+          <span id="category-badge" class="category-badge">Kategori</span>
+          <span id="progress-text" class="progress-text">Soal 1 dari 15</span>
+        </div>
+        <div class="progress-bar-container">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+      </div>
+
+      <div id="question-container">
+        <h2 id="question-text" class="question-title">Pertanyaan akan muncul di sini...</h2>
+        <ul id="options-list" class="options-list">
+          <!-- Pilihan jawaban di-render via JS -->
+        </ul>
+      </div>
+
+      <div class="navigation">
+        <button id="prev-btn" class="btn btn-secondary" onclick="prevQuestion()" disabled>Sebelumnya</button>
+        <button id="next-btn" class="btn" onclick="nextQuestion()">Selanjutnya</button>
+      </div>
+    </div>
+
+    <!-- Screen 3: Results Screen -->
+    <div id="results-screen" class="results-screen hidden">
+      <h1>Hasil Kuis Kamu</h1>
+      <div id="score-circle" class="score-circle">0%</div>
+      
+      <div class="stats-grid">
+        <div class="stat-card correct">
+          <div id="correct-count" class="stat-value">0</div>
+          <div class="stat-label">Jawaban Benar</div>
+        </div>
+        <div class="stat-card wrong">
+          <div id="wrong-count" class="stat-value">0</div>
+          <div class="stat-label">Jawaban Salah</div>
+        </div>
+      </div>
+
+      <p id="result-message">Kerja bagus! Teruskan belajar.</p>
+      <button class="btn" onclick="restartQuiz()">Coba Lagi</button>
+    </div>
+  </div>
+
+  <script>
+    // Data Soal
+    const quizData = [
+      {
+        category: "MATEMATIKA",
+        question: "Hasil dari 12 × 15 - 100 adalah...",
+        options: ["80", "70", "90", "60"],
+        correct: 0
+      },
+      {
+        category: "IPA",
+        question: "Planet terbesar di tata surya kita adalah...",
+        options: ["Bumi", "Mars", "Jupiter", "Venus"],
+        correct: 2
+      },
+      {
+        category: "BAHASA INDONESIA",
+        question: 'Sinonim kata "pandai" adalah...',
+        options: ["Bodoh", "Cerdas", "Malas", "Lambat"],
+        correct: 1
+      },
+      {
+        category: "CODING & AI",
+        question: "Bahasa pemrograman yang paling sering dipakai untuk AI adalah...",
+        options: ["Python", "HTML", "CSS", "Word"],
+        correct: 0
+      },
+      {
+        category: "IPS",
+        question: "Ibu kota provinsi Sulawesi Tengah adalah...",
+        options: ["Makassar", "Manado", "Palu", "Kendari"],
+        correct: 2
+      },
+      {
+        category: "BAHASA INGGRIS",
+        question: 'Bahasa Inggris dari "Saya sedang belajar" adalah...',
+        options: ["I am studying", "I am sleeping", "I am eating", "I am playing"],
+        correct: 0
+      },
+      {
+        category: "PPKN",
+        question: "Pancasila sebagai dasar negara disahkan pada tanggal...",
+        options: ["17 Agustus 1945", "18 Agustus 1945", "1 Juni 1945", "20 Mei 1908"],
+        correct: 1
+      },
+      {
+        category: "TIK",
+        question: "Kepanjangan dari CPU adalah...",
+        options: ["Central Processing Unit", "Central Power Unit", "Computer Power User", "Central Print Unit"],
+        correct: 0
+      },
+      {
+        category: "MATEMATIKA",
+        question: "Jika sebuah segitiga memiliki sudut 90 derajat, maka disebut segitiga...",
+        options: ["Sama sisi", "Siku-siku", "Sama kaki", "Tumpul"],
+        correct: 1
+      },
+      {
+        category: "IPA",
+        question: "Fotosintesis terjadi pada bagian tumbuhan...",
+        options: ["Akar", "Daun", "Batang", "Bunga"],
+        correct: 1
+      },
+      {
+        category: "BAHASA INDONESIA",
+        question: "Kalimat yang diakhiri tanda seru (!) biasanya adalah kalimat...",
+        options: ["Berita", "Tanya", "Perintah / Seruan", "Pasif"],
+        correct: 2
+      },
+      {
+        category: "IPS",
+        question: "Benua terbesar di dunia adalah...",
+        options: ["Afrika", "Eropa", "Asia", "Australia"],
+        correct: 2
+      },
+      {
+        category: "CODING",
+        question: "Untuk menampilkan tulisan di Python, perintahnya adalah...",
+        options: ["print()", "show()", "tulis()", "cetak()"],
+        correct: 0
+      },
+      {
+        category: "BAHASA INGGRIS",
+        question: 'Lawan kata dari "Big" adalah...',
+        options: ["Small", "Large", "Huge", "Tall"],
+        correct: 0
+      },
+      {
+        category: "PENGETAHUAN UMUM",
+        question: "AI yang bisa membuat gambar dan teks baru disebut...",
+        options: ["Generative AI", "Kalkulator", "Mesin Ketik"],
+        correct: 0
+      }
+    ];
+
+    // State Aplikasi
+    let currentQuestionIndex = 0;
+    let userAnswers = new Array(quizData.length).fill(null);
+
+    // Elemen DOM
+    const startScreen = document.getElementById('start-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const questionText = document.getElementById('question-text');
+    const optionsList = document.getElementById('options-list');
+    const categoryBadge = document.getElementById('category-badge');
+    const progressText = document.getElementById('progress-text');
+    const progressBar = document.getElementById('progress-bar');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+
+    function startQuiz() {
+      startScreen.classList.add('hidden');
+      quizScreen.classList.remove('hidden');
+      currentQuestionIndex = 0;
+      userAnswers.fill(null);
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = quizData[currentQuestionIndex];
+      
+      // Update metadata & progress
+      categoryBadge.textContent = q.category;
+      progressText.textContent = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`;
+      const progressPercent = ((currentQuestionIndex + 1) / quizData.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      // Format teks pertanyaan (mengubah format `code` jika ada)
+      let formattedQuestion = q.question.replace(/`([^`]+)`/g, '<code>$1</code>');
+      questionText.innerHTML = formattedQuestion;
+
+      // Clear & render pilihan jawaban
+      optionsList.innerHTML = '';
+      const letters = ['A', 'B', 'C', 'D'];
+
+      q.options.forEach((opt, idx) => {
+        const li = document.createElement('li');
+        li.className = 'option-item';
+        if (userAnswers[currentQuestionIndex] === idx) {
+          li.classList.add('selected');
+        }
+
+        let formattedOption = opt.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+        li.innerHTML = `
+          <div class="option-prefix">${letters[idx]}</div>
+          <div>${formattedOption}</div>
+        `;
+
+        li.addEventListener('click', () => selectOption(idx));
+        optionsList.appendChild(li);
+      });
+
+      // Update navigasi
+      prevBtn.disabled = currentQuestionIndex === 0;
+      if (currentQuestionIndex === quizData.length - 1) {
+        nextBtn.textContent = 'Selesai & Kirim';
+      } else {
+        nextBtn.textContent = 'Selanjutnya';
+      }
+    }
+
+    function selectOption(index) {
+      userAnswers[currentQuestionIndex] = index;
+      const items = optionsList.querySelectorAll('.option-item');
+      items.forEach((item, idx) => {
+        if (idx === index) {
+          item.classList.add('selected');
+        } else {
+          item.classList.remove('selected');
+        }
+      });
+    }
+
+    function prevQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        loadQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (userAnswers[currentQuestionIndex] === null) {
+        alert("Silakan pilih salah satu jawaban terlebih dahulu!");
+        return;
+      }
+
+      if (currentQuestionIndex < quizData.length - 1) {
+        currentQuestionIndex++;
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      quizScreen.classList.add('hidden');
+      resultsScreen.classList.remove('hidden');
+
+      let correctCount = 0;
+      quizData.forEach((q, idx) => {
+        if (userAnswers[idx] === q.correct) {
+          correctCount++;
+        }
+      });
+
+      const wrongCount = quizData.length - correctCount;
+      const scorePercent = Math.round((correctCount / quizData.length) * 100);
+
+      document.getElementById('score-circle').textContent = `${scorePercent}%`;
+      document.getElementById('correct-count').textContent = correctCount;
+      document.getElementById('wrong-count').textContent = wrongCount;
+
+      const messageElem = document.getElementById('result-message');
+      if (scorePercent === 100) {
+        messageElem.textContent = "Luar biasa! Kamu menjawab semua pertanyaan dengan benar 🎉";
+      } else if (scorePercent >= 70) {
+        messageElem.textContent = "Hebat! Hasil yang sangat bagus 👍";
+      } else if (scorePercent >= 50) {
+        messageElem.textContent = "Cukup baik! Masih ada kesempatan untuk lebih baik lagi 😊";
+      } else {
+        messageElem.textContent = "Jangan berkecil hati, ayo belajar lagi dan coba lagi! 💪";
+      }
+    }
+
+    function restartQuiz() {
+      resultsScreen.classList.add('hidden');
+      startScreen.classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
